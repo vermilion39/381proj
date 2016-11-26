@@ -1,0 +1,23 @@
+<html>
+<head><title><%= r.name %></title></head>
+<body>
+<p>Name: <%= r.name %></p>
+<p>Borough: <%= r.borough %></p>
+<p>Cuisine: <%= r.cuisine %></p>
+<p>Photo:
+<% if (r.photo != "") {%>
+	<img src="data:<%= r.mimetype %>;base64,<%= r.photo %>">
+<% } %>
+</p>
+<p>Address</p>
+<p>Street: <%= r.street %></p>
+<p>Building: <%= r.building %></p>
+<p>Zipcode: <%= r.zipcode %></p>
+<p>Coordinates</p>
+<p>Longitude: <%= r.lon %></p>
+<p>Latitude: <%= r.lat %></p>
+<p>Uploader: <%= r.owner %></p>
+
+<a href=/update>Update</a> <a href=/delete?owner=<%= r.owner %>&id=<%= r._id %>>Delete</a>
+</BODY>
+</HTML>

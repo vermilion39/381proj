@@ -1,0 +1,11 @@
+<html>
+<head>Restaurant</head>
+<body>
+<H1>Showing <%= r.length %> Products</H1>
+<p><a href=/create>Create</a></p>
+<ol>
+  <% r.forEach(function(rest) { %>
+  <li><a href=/api/read/name/:<%= rest.name %>><%= rest.name %></a></li>
+  <% });                        %>
+</ol>
+</BODY></HTML>
