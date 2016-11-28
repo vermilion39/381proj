@@ -219,6 +219,51 @@ app.get('/delete', function(req,res) {
 	});
 });
 
+app.get('/update',function(req,res) {
+	var uname = req.query.owner;
+	var id = req.query.id;
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function() {
+	var Restaurant = mongoose.model('restaurant',restSchema);
+		if (uname == req.session.username) {
+		Restaurant.findOne({_id:ObjectId(id)}, function(err,result) {
+		if (err) return console.error(err);
+		db.close();
+		res.render("update", {r:result});
+		});
+		}
+		else {
+		db.close();
+		res.end('You are not owner');
+		}
+	});
+});
+
+app.post('/update',function(req,res) {
+	var id = req.query.id;
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function(callback) {
+	var Restaurant = mongoose.model('restaurant',restSchema);
+		Restaurant.update({_id:ObjectId(id)},{$set: {name:req.body.name, borough:req.body.borough, cuisine:req.body.cuisine, street:req.body.cuisine, building:req.body.street, zipcode:req.body.zipcode, lon:req.body.lon, lat:req.body.lat, photo:new Buffer(req.files.photo.data).toString('base64')}},function(err,result) {
+		if (err) return console.error(err);
+		if (result != null) {
+		db.close();
+		res.end('updated');
+		}
+		else {
+		db.close();
+		res.end('update failed.');
+		}
+		});
+	});
+});
+
 app.get('/logout',function(req,res) {
 	req.session = null;
 	res.redirect('/');
