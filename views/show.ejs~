@@ -1,23 +1,59 @@
 <html>
-<head><title><%= r.name %></title></head>
+<head><title><%= r.name %></title>
+<style>
+       #map {
+        height: 400px;
+        width: 50%;
+       }
+</style>
+</head>
 <body>
 <p>Name: <%= r.name %></p>
 <p>Borough: <%= r.borough %></p>
 <p>Cuisine: <%= r.cuisine %></p>
 <p>Photo:
 <% if (r.photo != "") {%>
-	<img src="data:<%= r.mimetype %>;base64,<%= r.photo %>">
+	<img src="data:image/jpeg;base64,<%= r.photo %>">
 <% } %>
 </p>
 <p>Address</p>
-<p>Street: <%= r.street %></p>
-<p>Building: <%= r.building %></p>
-<p>Zipcode: <%= r.zipcode %></p>
+<p>Street: <%= r.address.street %></p>
+<p>Building: <%= r.address.building %></p>
+<p>Zipcode: <%= r.address.zipcode %></p>
 <p>Coordinates</p>
-<p>Longitude: <%= r.lon %></p>
-<p>Latitude: <%= r.lat %></p>
+<p>Longitude: <%= r.address.coord.lon %></p>
+<p>Latitude: <%= r.address.coord.lat %></p>
+<div id="map"></div>
+    <script>
+      function initMap() {
+        var uluru = {lat: <%=r.address.coord.lat%>, lng: <%=r.address.coord.lon %>};
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 8,
+          center: uluru
+        });
+        var marker = new google.maps.Marker({
+          position: uluru,
+          map: map
+        });
+      }
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_SOld-4xvMG8VFW4e552V7s4kjDDnlnw&callback=initMap">
+    </script>
+<p>Rate:
+<% if (r.rate != "") {%>
+<ol>
+  <% r.rate.forEach(function(rest) { %>
+  <li>User: <%=rest.rname%> Score: <%= rest.score %></li><br>
+  <% });%>
+</ol>
+<% } %>
+</p>
 <p>Uploader: <%= r.owner %></p>
 
-<a href=/update>Update</a> <a href=/delete?owner=<%= r.owner %>&id=<%= r._id %>>Delete</a>
+<form action="/rate?id=<%= r._id %>" method="post" encType="multipart/form-data">Rate restaurant: <input type="text" name="score" min="0" max="10" required>
+<input type="submit" value="Rate">
+</form>
+<a href=/update?owner=<%= r.owner %>&id=<%= r._id %>>Update</a>	<a href=/delete?owner=<%= r.owner %>&id=<%= r._id %>>Delete</a>
 </BODY>
 </HTML>

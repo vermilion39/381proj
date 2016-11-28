@@ -14,6 +14,12 @@ var restSchema = mongoose.Schema({
 			}
 	},
 	photo: String,
-	owner: String
+	owner: String,
+	rate: [
+		{
+		rname: String,
+		score: String
+		}
+	      ]
 });
 module.exports = restSchema;

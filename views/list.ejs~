@@ -2,10 +2,20 @@
 <head><title>Restaurant</title></head>
 <body>
 <h3>Showing <%= r.length %> Restaurants</h3>
+<p>You are logged in as: <%= u.username%></p>
 <p><a href=/create>Create</a></p><br>
+<p><form action='/search' method='post' encType="multipart/form-data">
+Search restaurant by : <select name="type">
+<option value="rname">name</option>
+<option value="rborough">borough</option>
+<option value="rcuisine">cuisine</option>
+</select><input type="text" name="rest" required>
+<input type="submit" value="Find">
+</form></p><br>
+<p><a href=/read>Back to whole list</a></p>
 <ul>
   <% r.forEach(function(rest) { %>
-  <li><a href=/readDetails?id= <%= rest._id %>><%= rest.name %></a></li><br>
+  <li><a href=/readDetails?id=<%= rest._id %>><%= rest.name %></a></li><br>
   <% });                        %>
 </ul>
 </BODY></HTML>

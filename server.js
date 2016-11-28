@@ -123,7 +123,7 @@ app.post('/create',function(req,res) {
 	r['cuisine'] = (req.body.cuisine != null) ? req.body.cuisine : null;
 	r['address'] = {};
 	r.address.street = (req.body.street != null) ? req.body.street : null;
-	r.address.building = (req.body.building != null) ? req.body.street : null;
+	r.address.building = (req.body.building != null) ? req.body.building : null;
 	r.address.zipcode = (req.body.zipcode != null) ? req.body.zipcode : null;
 	r.address['coord'] = {};
 	r.address.coord.lon = (req.body.lon != null) ? req.body.lon : null;
@@ -164,7 +164,7 @@ app.get('/read', function(req,res) {
 		db.close();
 		var rest = {};
 		rest = result;
-		res.render("list", {r:rest});
+		res.render("list", {r:rest, u:req.session});
 		}
 		else {
 		db.close();
@@ -250,18 +250,143 @@ app.post('/update',function(req,res) {
 	db.on('eror', console.error.bind(console,'connection error'));
 	db.once('open', function(callback) {
 	var Restaurant = mongoose.model('restaurant',restSchema);
-		Restaurant.update({_id:ObjectId(id)},{$set: {name:req.body.name, borough:req.body.borough, cuisine:req.body.cuisine, street:req.body.cuisine, building:req.body.street, zipcode:req.body.zipcode, lon:req.body.lon, lat:req.body.lat, photo:new Buffer(req.files.photo.data).toString('base64')}},function(err,result) {
-		if (err) return console.error(err);
-		if (result != null) {
+		if (new Buffer(req.files.photo.data).toString('base64') != "") {
+		Restaurant.update({_id:ObjectId(id)},{$set: {photo:new Buffer(req.files.photo.data).toString('base64')}},function(){
+		db.close();		
+		});
+		}
+			Restaurant.update({_id:ObjectId(id)},{$set: {name:req.body.name, borough:req.body.borough, cuisine:req.body.cuisine, "address.street":req.body.street, "address.building":req.body.building, "address.zipcode":req.body.zipcode, "address.coord.lon":req.body.lon, "address.coord.lat":req.body.lat}},function(err,result) {
+			if (err) return console.error(err);
+			if (result != null) {
+			db.close();
+			res.end('updated');
+			}
+			else {
+			db.close();
+			res.end('update failed.');
+			}
+			});
+	});
+});
+
+app.post('/search',function(req,res) {
+	if(req.body.type == "rname") {
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function(callback) {
+	var Restaurant = mongoose.model('restaurant',restSchema);
+		Restaurant.find({name:req.body.rest}, function(err,result) {
+		if(err) return console.error(err);
+		if(result != null) {
 		db.close();
-		res.end('updated');
+		var rest = {};
+		rest = result;
+		res.render("list", {r:rest, u:req.session});
 		}
 		else {
 		db.close();
-		res.end('update failed.');
+		res.end('No Restaurant');
 		}
 		});
 	});
+	}
+	if(req.body.type == "rborough") {
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function(callback) {
+	var Restaurant = mongoose.model('restaurant',restSchema);
+		Restaurant.find({borough:req.body.rest}, function(err,result) {
+		if(err) return console.error(err);
+		if(result != null) {
+		db.close();
+		var rest = {};
+		rest = result;
+		res.render("list", {r:rest, u:req.session});
+		}
+		else {
+		db.close();
+		res.end('No Restaurant');
+		}
+		});
+	});
+	}
+	if(req.body.type == "rcuisine") {
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function(callback) {
+	var Restaurant = mongoose.model('restaurant',restSchema);
+		Restaurant.find({cuisine:req.body.rest}, function(err,result) {
+		if(err) return console.error(err);
+		if(result != null) {
+		db.close();
+		var rest = {};
+		rest = result;
+		res.render("list", {r:rest, u:req.session});
+		}
+		else {
+		db.close();
+		res.end('No Restaurant');
+		}
+		});
+	});
+	}
+});
+
+app.post('/rate',function(req,res) {
+	var id = req.query.id;
+	var valid = true;
+	var count = 0;
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function() {
+	var Restaurant = mongoose.model('restaurant',restSchema);
+		Restaurant.find({_id:ObjectId(id)},function(err,result) {
+		if (err) return console.error(err);
+		result.forEach(function(rest) {
+			if (rest.rate[count] == null) {
+			return false;
+			}
+			if (req.session.authenticated != true) {
+			valid = false;
+			db.close();
+			return false;
+			}
+			if (rest.rate[count].rname == req.session.username) {
+			valid = false;
+			db.close();
+			return false;
+			}
+			count++;
+		});
+		if (valid) {
+		Restaurant.update({_id:ObjectId(id)},{$set:{rate:{rname:req.session.username, score:req.body.score}}},function(err,result) {
+		if (err) return console.error(err);
+		if (result != null) {
+		db.close();
+		res.end('Rated');
+		} else {
+		db.close();
+		res.end('Rate failed');
+		}
+		});
+		}
+		else if (req.session.authenticated == true){
+		res.end('You have rated this restaurant');
+		}
+		else if (req.session.authenticated != true){
+		res.end('You must login to rate');
+		}
+		});
+	});
+
 });
 
 app.get('/logout',function(req,res) {
