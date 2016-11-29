@@ -16,6 +16,7 @@ var SECRETKEY2 = 'Keep this to yourself';
 app.set('view engine','ejs');
 app.use(fileUpload());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(session({
   name: 'session',
@@ -366,7 +367,10 @@ app.post('/rate',function(req,res) {
 			}
 			count++;
 		});
-		if (valid) {
+		if (req.body.score<0 || req.body.score>10) {
+		db.close();
+		res.end('Score should between 0 and 10');
+		}else if (valid) {
 		Restaurant.update({_id:ObjectId(id)},{$set:{rate:{rname:req.session.username, score:req.body.score}}},function(err,result) {
 		if (err) return console.error(err);
 		if (result != null) {
@@ -388,6 +392,36 @@ app.post('/rate',function(req,res) {
 	});
 
 });
+
+app.post('/api/create',function(req,res) {
+	var r = {};
+	console.log('Incoming request: POST');
+	console.log('Request body: ', req.body);
+	console.log('name: ', req.body.name);
+	if (req.body.name != null) {
+	r = req.body;
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function() {
+		var Restaurant = mongoose.model('restaurant',restSchema);
+		var newR = new Restaurant(r);
+		newR.save(function(err) {
+			if (err) {
+			db.close();
+			res.end('{status: failed}');
+			}
+			else {
+			db.close();
+			res.end('{status: ok, _id: '+newR._id+'}');
+			}
+		});	
+	});
+	}
+	res.end('Connection closed',200);
+});
+	
 
 app.get('/logout',function(req,res) {
 	req.session = null;
