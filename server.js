@@ -16,7 +16,6 @@ var SECRETKEY2 = 'Keep this to yourself';
 app.set('view engine','ejs');
 app.use(fileUpload());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(session({
   name: 'session',
