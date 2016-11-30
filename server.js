@@ -8,6 +8,7 @@ var assert = require('assert');
 var fileUpload = require('express-fileupload');
 var ObjectId = require('mongodb').ObjectID;
 var Buffer = require('buffer').Buffer;
+var router = express.Router();
 
 
 var SECRETKEY1 = 'I want to pass COMPS381F';
@@ -391,6 +392,112 @@ app.post('/rate',function(req,res) {
 	});
 
 });
+
+router.route('/create')
+
+.post(function(req, res) {
+		
+	var r = {};
+	r.name = req.body.name;
+	if (r.name != null) {
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function() {
+		var Restaurant = mongoose.model('restaurant',restSchema);
+		var newR = new Restaurant(r);
+		newR.save(function(err) {
+			if (err) {
+			db.close();
+			res.json({message: 'Insertion failed'});
+			}
+			else {
+			db.close();
+			res.json({
+				status: 'ok, _id:' +newR._id
+			});
+			}
+		});	
+	});
+	} else {
+	res.json({
+	status: 'failed'
+	});
+	}
+})
+
+router.route('/read/:type/:findBy')
+
+.get(function(req, res) {
+	console.log(req.params.type);
+	console.log(req.params.findBy);
+	if (req.params.type == 'name') {
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function(callback) {
+	var Restaurant = mongoose.model('restaurant',restSchema);
+		Restaurant.find({name:req.params.findBy}, function(err,result) {
+		if(err) return console.error(err);
+		if(result != null) {
+		db.close();
+		res.json(result);
+		}
+		else {
+		db.close();
+		res.json({});
+		}
+		});
+	});
+	}
+	else if (req.params.type == 'borough') {
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function(callback) {
+	var Restaurant = mongoose.model('restaurant',restSchema);
+		Restaurant.find({borough:req.params.findBy}, function(err,result) {
+		if(err) return console.error(err);
+		if(result != null) {
+		db.close();
+		res.json(result);
+		}
+		else {
+		db.close();
+		res.json({});
+		}
+		});
+	});
+	}
+	else if (req.params.type == 'cuisine') {
+	mongoose.connect(mongourl);
+	var db = mongoose.connection;
+	var restSchema = require('./restaurant');
+	db.on('eror', console.error.bind(console,'connection error'));
+	db.once('open', function(callback) {
+	var Restaurant = mongoose.model('restaurant',restSchema);
+		Restaurant.find({cuisine:req.params.findBy}, function(err,result) {
+		if(err) return console.error(err);
+		if(result != null) {
+		db.close();
+		res.json(result);
+		}
+		else {
+		db.close();
+		res.json({});
+		}
+		});
+	});
+	}
+	else {
+	res.json({message: 'incorrect path name'});
+	}
+})
+
+app.use('/api', router);
 
 app.get('/logout',function(req,res) {
 	req.session = null;

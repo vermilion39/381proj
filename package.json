@@ -10,7 +10,8 @@
 	"express-fileupload": "*",
 	"body-parser": "*",
 	"cookie-session": "*",
-	"buffer": "*"
+	"buffer": "*",
+	"router": "*"
     },
     "scripts": {
 	"start": "node server.js"
