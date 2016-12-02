@@ -24,7 +24,6 @@ app.use(session({
 }));
 
 app.get('/',function(req,res) {
-	console.log(req.session);
 	if (!req.session.authenticated) {
 		res.redirect('/login');
 	}
@@ -371,7 +370,7 @@ app.post('/rate',function(req,res) {
 		db.close();
 		res.end('Score should between 0 and 10');
 		}else if (valid) {
-		Restaurant.update({_id:ObjectId(id)},{$set:{rate:{rname:req.session.username, score:req.body.score}}},function(err,result) {
+		Restaurant.update({_id:ObjectId(id)},{$push:{rate:{rname:req.session.username, score:req.body.score}}},function(err,result) {
 		if (err) return console.error(err);
 		if (result != null) {
 		db.close();
