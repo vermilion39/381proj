@@ -351,7 +351,11 @@ app.post('/rate',function(req,res) {
 		Restaurant.find({_id:ObjectId(id)},function(err,result) {
 		if (err) return console.error(err);
 		result.forEach(function(rest) {
-			if (rest.rate[count] == null) {
+			console.log(rest.rate);
+			var rr = rest.rate;
+			rr.forEach(function(ra) {
+			console.log(ra.rname);
+			if (ra == null) {
 			return false;
 			}
 			if (req.session.authenticated != true) {
@@ -359,12 +363,13 @@ app.post('/rate',function(req,res) {
 			db.close();
 			return false;
 			}
-			if (rest.rate[count].rname == req.session.username) {
+			if (ra.rname == req.session.username) {
 			valid = false;
 			db.close();
 			return false;
 			}
 			count++;
+			});
 		});
 		if (req.body.score<0 || req.body.score>10) {
 		db.close();
