@@ -27,8 +27,7 @@ app.get('/',function(req,res) {
 	if (!req.session.authenticated) {
 		res.redirect('/login');
 	}
-	res.status(200).end('Hello, ' + req.session.username +
-	  '!  This is a secret page!');
+	res.redirect('/read');
 });
 
 app.get('/login',function(req,res) {
@@ -50,7 +49,7 @@ app.post('/login',function(req,res) {
 		User.findOne({userid: id}, function(err,result) {
 			if (err) return console.error(err);
 			if (result != null){
-				if (password = result.password){
+				if (password == result.password){
 					db.close();
 					req.session.authenticated = true;
 					req.session.username = id;
@@ -100,7 +99,6 @@ app.post('/register',function(req,res) {
 					console.log('Insert success'+JSON.stringify(newUser))
 					db.close()
 					res.end('User '+id+' added.');
-
 				});
 			}
 			else {

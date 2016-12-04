@@ -2,7 +2,7 @@
 <head><title>Restaurant</title></head>
 <body>
 <h3>Showing <%= r.length %> Restaurants</h3>
-<p>You are logged in as: <%= u.username%></p>
+<p>You are logged in as: <%= u.username%> <a href=/logout>Logout</a></p>
 <p><a href=/create>Create</a></p><br>
 <p><form action='/search' method='post' encType="multipart/form-data">
 Search restaurant by : <select name="type">
