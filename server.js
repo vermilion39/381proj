@@ -400,7 +400,7 @@ router.route('/create')
 .post(function(req, res) {
 		
 	var r = {};
-	r.name = req.body.name;
+	r = req.body;
 	if (r.name != null) {
 	mongoose.connect(mongourl);
 	var db = mongoose.connection;
